@@ -34,6 +34,18 @@ def downSampleChrominance(channel, factor):
 
     return result
 
+def subSampleChrominance(channel, factor):
+    h, w = channel.shape
+    result = np.zeros((h // factor, w // factor), dtype=np.uint8)
+    
+    for i in range(0, h - h % factor, factor):
+        for j in range(0, w - w % factor, factor):
+            block = channel[i:i+factor, j:j+factor]
+            mainColor = block[0][0]
+            result[i // factor, j // factor] = np.uint8(mainColor)
+
+    return result
+
 """
     Usually, the chrominance downsampling factor is fixed at 2, which essentially halves the file size. Since we have three channels (Y, Cb, Cr) 
     that we can consider to be of size "X", when we divide the rows and columns of the chrominance channels by 2, we get: X + X/4 + X/4 = 1.5X, 
@@ -44,9 +56,21 @@ def downSampleChrominance(channel, factor):
 Y, Cb, Cr = YCbCrImage(image)
 getYCbCrSizeData("original_444", Y, Cb, Cr)
 
-Cb = downSampleChrominance(Cb, 2)
+
+#Downsampling test
+'''Cb = downSampleChrominance(Cb, 2)
 Cr = downSampleChrominance(Cr, 2)
-getYCbCrSizeData("subsampled_420", Y, Cb, Cr)
+'''
+
+
+
+#Subsampling teste
+'''
+CbSubSampled = subSampleChrominance(Cb, 2)
+CrSubSampled = subSampleChrominance(Cr, 2)
+'''
+
+getYCbCrSizeData("subsampled_420", Y, CbSubSampled, Cr)
 
 
 #Rebuilding image for visualization ------------------------------
@@ -54,11 +78,18 @@ CbResized = cv.resize(Cb, (image.shape[1], image.shape[0]), interpolation=cv.INT
 CrResized = cv.resize(Cr, (image.shape[1], image.shape[0]), interpolation=cv.INTER_CUBIC)
 
 
+
+#Subsampling visualization
+#cv.imshow("Chroma blue original: ", Cb)
+#cv.imshow("Chroma blue subsample", CbResized)
+#cv.imshow("Chroma red original: ", Cr)
+#cv.imshow("Chroma red subsample", CrResized)
+
 reconstructedImage = cv.merge([Y, CbResized, CrResized])
 reconstructedImage = cv.cvtColor(reconstructedImage, cv.COLOR_YCrCb2BGR)
 
-
-cv.imshow("Original image", image)
-cv.imshow("Reconstructed image", reconstructedImage)
+#Image visualization:
+#cv.imshow("Original image", image)
+#cv.imshow("Reconstructed image", reconstructedImage)
 
 cv.waitKey(0)
