@@ -1,1 +1,1 @@
-Cb
+Cfiltered, coeffSlices, wavelet

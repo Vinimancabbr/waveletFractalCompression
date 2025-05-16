@@ -4,17 +4,19 @@ import os
 import tempfile
 import matplotlib.pyplot as plt
 import pywt
+import pickle
 
 image = cv.imread("imageTest\\real-nature-hd-1920x1200-wallpaper-preview.jpg")
+
 #Debug functions  ------------------------------
-def getYCbCrSizeData(path, Y, Cb, Cr):
-    np.savez(path, Y=Y, Cb=Cb, Cr=Cr)
-    size_bytes = os.path.getsize(path + ".npz")
-    size_kb = size_bytes / 1024
+def getSerializedSize(data, name="Data"):
+    serialized = pickle.dumps(data)
+    total_bytes = len(serialized)
+    size_kb = total_bytes / 1024
     size_mb = size_kb / 1024
-    print(f"{path}.npz -> {size_bytes} bytes ({size_kb:.2f} KB / {size_mb:.2f} MB)")
-    os.remove(path + ".npz")
-    
+
+    print(f"{name} -> {total_bytes} bytes ({size_kb:.2f} KB / {size_mb:.2f} MB)")
+    return total_bytes
 #JPEG Processing  ------------------------------
 def YCbCrImage(originalImage):
     imageRGB = cv.cvtColor(originalImage, cv.COLOR_BGR2RGB)
@@ -46,6 +48,16 @@ def subSampleChrominance(channel, factor):
 
     return result
 
+def channelsResize(Y, Cb, Cr, imageShape):
+    YResized = cv.resize(Y, (imageShape[1], imageShape[0]), interpolation=cv.INTER_CUBIC)
+    CbResized = cv.resize(Cb, (imageShape[1], imageShape[0]), interpolation=cv.INTER_CUBIC)
+    CrResized = cv.resize(Cr, (imageShape[1], imageShape[0]), interpolation=cv.INTER_CUBIC)
+    
+    reconstructedImage = cv.merge([YResized, CbResized, CrResized])
+    reconstructedImage = cv.cvtColor(reconstructedImage, cv.COLOR_YCrCb2BGR)
+    return reconstructedImage
+    
+    
 #Discrete Wavelet Transform Compression (code adapted from: https://www.youtube.com/watch?v=eJLF9HeZA8I&ab_channel=SteveBrunton)
 def DWTCompression(channel, factor=2, wavelet='haar', threshHold=0.05):
     '''
@@ -55,12 +67,12 @@ def DWTCompression(channel, factor=2, wavelet='haar', threshHold=0.05):
     coeffArr, coeffSlices, = pywt.coeffs_to_array(coeffs)
     #TreshHolding ---------------------
     CoeffSort = np.sort(np.abs(coeffArr.reshape(-1)))
-    thresh = CoeffSort[int(np.floor((threshHold) * len(CoeffSort)))]
+    thresh = CoeffSort[int(np.floor((1 - threshHold) * len(CoeffSort)))]
     ind = np.abs(coeffArr) > thresh
     
     Cfiltered = coeffArr * ind #treshold small indices
-    
-    return Cfiltered, coeffSlices, wavelet
+    data = Cfiltered, coeffSlices, wavelet
+    return data
     
 def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'): 
     coeffsThresholded = pywt.array_to_coeffs(Cfiltered, coeffSlices, output_format='wavedec2')
@@ -76,51 +88,39 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
     Note: This is not exactly reflected in the size information provided by the getYCbCrSizeData method, since the file format itself has its own intrinsic overhead.
     
 """
-Y, Cb, Cr = YCbCrImage(image)
-#getYCbCrSizeData("original_444", Y, Cb, Cr)
-
 cv.imshow("Original image", image)
+
+Y, Cb, Cr = YCbCrImage(image)
+originalData = (Y, Cb, Cr)
+getSerializedSize(originalData, "OriginalImageInfo")
 
 #Discrete Wavelet Transfornm test ------------------------------
 
 #cv.imshow("DWT not compressed", Y)
+'''
+DWTData = DWTCompression(Y, 4, 'haar', 0.1)
 
-dwtImage, coeffSlices, wavelet = DWTCompression(Y, 4, 'db1', 0.1)
-reconstructedImage = DWTDecompression(dwtImage, coeffSlices, wavelet)
-
+reconstructedImage = DWTDecompression(DWTData[0], DWTData[1], DWTData[2])
+getSerializedSize(DWTData, "DWTDecompressedImageInfo")
 Y2, Cb2, Cr2 = YCbCrImage(reconstructedImage)
 
-YResized = cv.resize(Y2, (image.shape[1], image.shape[0]), interpolation=cv.INTER_CUBIC)
-
-reconstructedImage = cv.merge([YResized, Cb, Cr])
-reconstructedImage = cv.cvtColor(reconstructedImage, cv.COLOR_YCrCb2BGR)
-cv.imshow("Y DWT compressed", reconstructedImage)
-#cv.imshow("DWT compressed image", reconstructedImage)
+reconstructedImage = channelsResize(Y2, Cb, Cr, image.shape)
+cv.imshow("DWT compressed image", reconstructedImage)
+'''
 
 
 #Downsampling test ------------------------------
-'''
-CbDownSample = downSampleChrominance(Cb, 2)
-CrDownSample = downSampleChrominance(Cr, 2)
-'''
-
-
+CbSampled = downSampleChrominance(Cb, 10)
+CrSampled = downSampleChrominance(Cr, 10)
 
 
 #Subsampling test------------------------------
 '''
-CbSubSampled = subSampleChrominance(Cb, 100)
-CrSubSampled = subSampleChrominance(Cr, 100)
+CbSampled = subSampleChrominance(Cb, 100)
+CrSampled = subSampleChrominance(Cr, 100)
 '''
 
 #getYCbCrSizeData("subsampled_420", Y, CbDownSample, CrDownSample)
-
-
-#Rebuilding image for visualization ------------------------------
-'''
-CbResized = cv.resize(CbDownSample, (image.shape[1], image.shape[0]), interpolation=cv.INTER_CUBIC)
-CrResized = cv.resize(CrDownSample, (image.shape[1], image.shape[0]), interpolation=cv.INTER_CUBIC)
-'''
 
 
 #Subsampling visualization ------------------------------
@@ -132,16 +132,11 @@ cv.imshow("Chroma red subsample", CrResized)
 cv.imshow("Y: ", Y)
 '''
 
-
-
 #Image visualization:
-
-'''
-reconstructedImage = cv.merge([Y, CbResized, CrResized])
-reconstructedImage = cv.cvtColor(reconstructedImage, cv.COLOR_YCrCb2BGR)
-
+downSampledImageData = (Y, CbSampled, CrSampled)
+getSerializedSize(downSampledImageData, "downSampledImageData")
+reconstructedImage = channelsResize(Y ,CbSampled, CrSampled, image.shape)
 cv.imshow("Original image", image)
 cv.imshow("Reconstructed image", reconstructedImage)
-'''
 
 cv.waitKey(0)
