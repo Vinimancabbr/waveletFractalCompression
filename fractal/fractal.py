@@ -1,5 +1,7 @@
 from random import randint
 from math import sqrt
+from sys import getsizeof
+import timeit
 import cv2 as cv
 import numpy as np
 
@@ -96,7 +98,24 @@ img = cv.imread('fractal/assets/Old classic/zelda.bmp')
 
 # Ensures the image is grayscale
 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY, img)
-img = decode(encode(img))
+
+print(f'Uncompressed image size: {getsizeof(img) / 1024} kb')
+
+start = timeit.default_timer()
+
+transformations = encode(img, 2)
+
+stop = timeit.default_timer()
+print(f'Time for enconding: {stop - start} seconds')
+
+start = timeit.default_timer()
+
+img = decode(transformations)
+
+print(f'Compressed image size: {getsizeof(transformations) / 1024} kb')
+
+stop = timeit.default_timer()
+print(f'Time for decoding: {stop - start} seconds')
 
 cv.imshow('Image', img)
 cv.waitKey(0)
