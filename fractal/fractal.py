@@ -12,15 +12,12 @@ def subsample(image, ratio=4):
     for y in range(0, len(image), ratio):
         for x in range(0, len(image[y]), ratio):
             # Calculates the average...
-            avg = 0
-            for i in range(y, y + ratio):
-                for j in range(x, x + ratio):
-                    avg = avg + (image[i][j] / (ratio * ratio))
+            avg = np.average(image[y:y+ratio, x:x+ratio])
 
             # ...then sets it as the value for a pixel on the new image
             for i in range(y, y + ratio):
                 for j in range(x, x + ratio):
-                    new_image[i // ratio][j // ratio] = int(avg)
+                    new_image[i // ratio, j // ratio] = int(avg)
     
     return new_image
 
