@@ -23,7 +23,7 @@ def subsample(image, ratio=2):
     return new_image
 
 def transform(image, axis, rotation_times, contrast=1, brightness=0):
-    return contrast*np.rot90(np.flip(image, axis), rotation_times)+brightness
+    return np.clip(contrast * np.rot90(np.flip(image, axis), rotation_times) + brightness, 0, 255).astype(np.uint8)
 
 def all_transforms(image) -> list:
     transforms = []
@@ -61,7 +61,7 @@ def encode(image, segsize=4):
                 if val <= abs(np.sum(contrast*t[d]['t']+brightness) - np.sum(segment)):
                     d = k
             
-            domain[i:i+segsize, j:j+segsize] = contrast*t[k]['t']+brightness
+            domain[i:i+segsize, j:j+segsize] = contrast*t[d]['t']+brightness
 
             # cv.imshow('D', domain)
             # cv.waitKey(0)
