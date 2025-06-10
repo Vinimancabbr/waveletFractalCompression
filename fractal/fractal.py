@@ -94,7 +94,7 @@ def decode(transforms, steps=8, res=512):
     return new_image
 # --- Functions ---
 
-img = cv.imread('fractal/assets/Old classic/zelda.bmp')
+img = cv.imread('waveletFractalCompression\\fractal\\assets\\Old classic\\zelda.bmp')
 
 # Ensures the image is grayscale
 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY, img)

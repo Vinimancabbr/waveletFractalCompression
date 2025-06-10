@@ -44,14 +44,14 @@ def DWTLeftColumn():
     textLabel = tk.Label(frameDiv, text="A Compressão de Imagens com DWT é uma técnica moderna e eficiente para"  
     "reduzir o tamanho de imagens digitais, preservando a qualidade visual.  Quando a DWT  é aplicada em um canal" 
     "de uma imagem, representamos a imagem original em um formato de multiresolução, onde separamos a base estrutural"  
-    "de uma imagem de seus detalhes finos e ruídos."
+    "de uma imagem de seus detalhes finos e ruídos, esses quais o olho humano tem dificuldade de observar detalhadamente."
     "\n\n\nFator é o valor responsável por determinar o número de iterações da decomposição DWT: ", wraplength=300, justify='left')
     textLabel.grid(row=2, column=0, columnspan=2, sticky='we')
 
     textLabelFactor = tk.Label(frameDiv, text="Factor: ")
     textLabelFactor.grid(row=3, column=0, sticky='ws')
     slider1 = tk.Scale(frameDiv,
-                    from_=1, to=100,     
+                    from_=1, to=10,     
                     orient="horizontal",  
                     command=sliderChange)     
     slider1.grid(row=3, column=1, sticky='we')
@@ -71,7 +71,8 @@ def DWTLeftColumn():
                     orient="horizontal",  
                     command=sliderChange)     
     slider2.grid(row=6, column=1, sticky='we')
-    
+
+
 
 def showLeftColumn(event=None):
     option = dropdownBtn.get()
@@ -114,9 +115,7 @@ def sliderChange(valor):
         
         #Reconstruindo imagem com o canal luminanscia comprimido
         reconstructedImage = channelsResize(Y2, Cb, Cr, imagemCV.shape) 
-        
-
-        
+    
     elif dropdownValue == "Opção 2":
         print("Opção 2")
     elif dropdownValue == "Subsample dos canais chroma":
