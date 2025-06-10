@@ -1,1 +1,2 @@
-Cfiltered, coeffSlices, wavelet
+
+    dropdownValue = dropdownBtn.get()

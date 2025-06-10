@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pywt
 import pickle
 
-image = cv.imread("imageTest\\real-nature-hd-1920x1200-wallpaper-preview.jpg")
+#image = cv.imread("waveletFractalCompression\\imageTest\\real-nature-hd-1920x1200-wallpaper-preview.jpg")
 
 #Debug functions  ------------------------------
 def getSerializedSize(data, name="Data"):
@@ -57,21 +57,25 @@ def channelsResize(Y, Cb, Cr, imageShape):
     reconstructedImage = cv.cvtColor(reconstructedImage, cv.COLOR_YCrCb2BGR)
     return reconstructedImage
     
-    
 #Discrete Wavelet Transform Compression (code adapted from: https://www.youtube.com/watch?v=eJLF9HeZA8I&ab_channel=SteveBrunton)
 def DWTCompression(channel, factor=2, wavelet='haar', threshHold=0.05):
     '''
         Haar wavelet is one of the main choices for image compression
     '''
     coeffs = pywt.wavedec2(channel, wavelet=wavelet, level=factor)
+    
     coeffArr, coeffSlices, = pywt.coeffs_to_array(coeffs)
+    
+    
     #TreshHolding ---------------------
     CoeffSort = np.sort(np.abs(coeffArr.reshape(-1)))
+
     thresh = CoeffSort[int(np.floor((1 - threshHold) * len(CoeffSort)))]
     ind = np.abs(coeffArr) > thresh
     
     Cfiltered = coeffArr * ind #treshold small indices
     data = Cfiltered, coeffSlices, wavelet
+    #cv.imshow("Decomposição DWT", Cfiltered)
     return data
     
 def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'): 
@@ -79,8 +83,8 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
     reconstructedImage = pywt.waverec2(coeffsThresholded, wavelet=wavelet)
     
     return reconstructedImage.astype('uint8')
-
-
+    
+    
 """
     Usually, the chrominance downsampling factor is fixed at 2, which essentially halves the file size. Since we have three channels (Y, Cb, Cr) 
     that we can consider to be of size "X", when we divide the rows and columns of the chrominance channels by 2, we get: X + X/4 + X/4 = 1.5X, 
@@ -88,36 +92,40 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
     Note: This is not exactly reflected in the size information provided by the getYCbCrSizeData method, since the file format itself has its own intrinsic overhead.
     
 """
+#cv.imshow("Original image", image)
 
-cv.imshow("Original image", image)
 
-Y, Cb, Cr = YCbCrImage(image)
-originalData = (Y, Cb, Cr)
-getSerializedSize(originalData, "OriginalImageInfo")
+
+#Y, Cb, Cr = YCbCrImage(image)
+#originalData = (Y, Cb, Cr)
+#getSerializedSize(originalData, "OriginalImageInfo")
 
 
 #Discrete Wavelet Transfornm test ------------------------------
 
 #cv.imshow("DWT not compressed", Y)
-'''
-DWTData = DWTCompression(Y, 4, 'haar', 0.1)
 
-reconstructedImage = DWTDecompression(DWTData[0], DWTData[1], DWTData[2])
-getSerializedSize(DWTData, "DWTDecompressedImageInfo")
-Y2, Cb2, Cr2 = YCbCrImage(reconstructedImage)
+#DWTData = DWTCompression(Y, 15, 'haar', 1)
 
-reconstructedImage = channelsResize(Y2, Cb, Cr, image.shape)
-cv.imshow("DWT compressed image", reconstructedImage)
-'''
+#reconstructedImage = DWTDecompression(DWTData[0], DWTData[1], DWTData[2])
+#getSerializedSize(DWTData, "DWTDecompressedImageInfo")
+#Y2, Cb2, Cr2 = YCbCrImage(reconstructedImage)
+
+
+#reconstructedImage = channelsResize(Y2, Cb, Cr, image.shape)
+#cv.imshow("DWT compressed image", reconstructedImage)
 
 #Downsampling test ------------------------------
-CbSampled = downSampleChrominance(Cb, 20)
-CrSampled = downSampleChrominance(Cr, 20)
+'''
+CbSampled = downSampleChrominance(Cb, 10)
+CrSampled = downSampleChrominance(Cr, 10)
+'''
+
 
 #Subsampling test------------------------------
 '''
-CbSampled = subSampleChrominance(Cb, 100)
-CrSampled = subSampleChrominance(Cr, 100)
+CbSampled = subSampleChrominance(Cb, 5)
+CrSampled = subSampleChrominance(Cr, 5)
 '''
 
 #getYCbCrSizeData("subsampled_420", Y, CbDownSample, CrDownSample)
@@ -133,10 +141,13 @@ cv.imshow("Y: ", Y)
 '''
 
 #Image visualization:
+'''
 downSampledImageData = (Y, CbSampled, CrSampled)
 getSerializedSize(downSampledImageData, "downSampledImageData")
 reconstructedImage = channelsResize(Y ,CbSampled, CrSampled, image.shape)
 cv.imshow("Original image", image)
 cv.imshow("Reconstructed image", reconstructedImage)
 
+
 cv.waitKey(0)
+'''
