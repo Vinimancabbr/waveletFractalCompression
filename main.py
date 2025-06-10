@@ -44,9 +44,15 @@ def sliderChange(valor):
         #Pegando o fator e o treshhold do slider
         fator = int(slider1.get())
         treshHold = 1 - (int(slider2.get())/1000)
+
         #Chamando a compressão DWT
         data = DWTCompression(Y, fator, 'haar', treshHold)
-        
+        data1 = (data[0] * 100, data[1])
+        coeffForDWT = Image.fromarray(data1[0])
+        coeffForDWT = redimensionar(coeffForDWT, 300, 300)
+        coeffForDWT = ImageTk.PhotoImage(coeffForDWT)
+        subImagemLabel.config(image=coeffForDWT)
+        subImagemLabel.image = coeffForDWT  
         #Reconstruindo a imagem com DWT reverso
         reconstructedImage = DWTDecompression(data[0], data[1], 'haar')
         
@@ -56,6 +62,7 @@ def sliderChange(valor):
         #Reconstruindo imagem com o canal luminanscia comprimido
         reconstructedImage = channelsResize(Y2, Cb, Cr, imagemCV.shape) 
         
+
         
     elif dropdownValue == "Opção 2":
         print("Opção 2")
@@ -106,50 +113,64 @@ frameEsquerda = tk.Frame(root)
 frameEsquerda.grid(column=0, sticky='nsew')
 frameEsquerda.grid_columnconfigure(0, weight=1)
 
-frameDiv = tk.Frame(frameEsquerda)
-frameDiv.grid(column=0, pady=30)
+
 
 frameDireita = tk.Frame(root, bg='green')
 frameDireita.grid_columnconfigure(0, weight=1)
 frameDireita.grid(row=0, column=1, sticky='nswe')
 
-iconeInserir = Image.open("assets\\open-folder.png")
+iconeInserir = Image.open("assets\\openFolder.png")
 iconeInserir = iconeInserir.resize((24, 24))
 iconeInserir = ImageTk.PhotoImage(iconeInserir)
-
-btnInserir = tk.Button(frameDiv, image=iconeInserir, relief='flat', command=inserirImagem)
-btnInserir.grid(row=0, padx=10, column=0, sticky='e')
-
-values = ["DWT (Transformada Wavelet Discreta)", "Subsample dos canais chroma", "Downsample dos canais chroma"]
-dropdownBtn = ttk.Combobox(frameDiv, values=values)
-dropdownBtn.current(0)
-dropdownBtn.grid(row=0, column=1, sticky='e')
 
 imagemLabel = tk.Label(frameDireita)
 imagemLabel.grid(row=0, column=0)
 
-textLabel1 = tk.Label(frameDiv, text="Factor: ")
-textLabel1.grid(row=1, column=0, sticky='ws')
+frameDiv = tk.Frame(frameEsquerda)
+frameDiv.grid(column=0, pady=30)
+
+btnInserir = tk.Button(frameDiv, image=iconeInserir, relief='flat', command=inserirImagem)
+btnInserir.grid(row=0, column=0, sticky='w')
+
+values = ["DWT (Transformada Wavelet Discreta)", "Subsample dos canais chroma", "Downsample dos canais chroma"]
+dropdownBtn = ttk.Combobox(frameDiv, values=values)
+dropdownBtn.current(0)
+dropdownBtn.grid(row=0, column=1, sticky='w')
+
+titleLabel = tk.Label(frameDiv, text="DWT (Transformada Wavelet Discreta)", justify='left', font=("TkDefaultFont", 10))
+titleLabel.grid(row=1, column=0, columnspan=2, sticky='w', pady=10)
+
+textLabel = tk.Label(frameDiv, text="A Compressão de Imagens com DWT é uma técnica moderna e eficiente para"  
+"reduzir o tamanho de imagens digitais, preservando a qualidade visual.  Quando a DWT  é aplicada em um canal" 
+"de uma imagem, representamos a imagem original em um formato de multiresolução, onde separamos a base estrutural"  
+"de uma imagem de seus detalhes finos e ruídos."
+"\n\n\nFator é o valor responsável por determinar o número de iterações da decomposição DWT: ", wraplength=300, justify='left')
+textLabel.grid(row=2, column=0, columnspan=2, sticky='we')
+
+textLabelFactor = tk.Label(frameDiv, text="Factor: ")
+textLabelFactor.grid(row=3, column=0, sticky='ws')
 
 slider1 = tk.Scale(frameDiv,
-                from_=1, to=100,     # intervalo de valores
-                orient="horizontal",  # ou "vertical"
-                command=sliderChange)     # função chamada ao mover
-slider1.grid(row=1, column=1, sticky='we')
+                from_=1, to=100,     
+                orient="horizontal",  
+                command=sliderChange)     
+slider1.grid(row=3, column=1, sticky='we')
 
-textLabel2 = tk.Label(frameDiv, text="TreshHold: ")
-textLabel2.grid(row=2, column=0, sticky='ws')
+subImagemLabel = tk.Label(frameDiv)
+subImagemLabel.grid(row=4, column=0, columnspan=2, sticky='w')
+
+textLabel2 = tk.Label(frameDiv, text="\n\nO treshhold determina qual a porcentagem de altas frequências serão descartadas: ", wraplength=300, justify='left')
+textLabel2.grid(row=5, column=0, columnspan=2, sticky='w')
+
+
+textLabelTreshhold = tk.Label(frameDiv, text="TreshHold: ")
+textLabelTreshhold.grid(row=6, column=0, sticky='ws')
 
 slider2 = tk.Scale(frameDiv,
-                from_= 5, to=999,     # intervalo de valores
-                orient="horizontal",  # ou "vertical"
-                command=sliderChange)     # função chamada ao mover
-slider2.grid(row=2, column=1, sticky='we')
-
-
-
-
-
+                from_= 5, to=999,     
+                orient="horizontal",  
+                command=sliderChange)     
+slider2.grid(row=6, column=1, sticky='we')
 
 root.mainloop()
 
