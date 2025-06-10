@@ -94,7 +94,6 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
 """
 #cv.imshow("Original image", image)
 
-#cv.imshow("Original image", image)
 
 
 #Y, Cb, Cr = YCbCrImage(image)
@@ -122,15 +121,11 @@ CbSampled = downSampleChrominance(Cb, 10)
 CrSampled = downSampleChrominance(Cr, 10)
 '''
 
-#Downsampling test ------------------------------
-#CbSampled = downSampleChrominance(Cb, 20)
-#CrSampled = downSampleChrominance(Cr, 20)
-
 
 #Subsampling test------------------------------
 '''
-CbSampled = subSampleChrominance(Cb, 100)
-CrSampled = subSampleChrominance(Cr, 100)
+CbSampled = subSampleChrominance(Cb, 5)
+CrSampled = subSampleChrominance(Cr, 5)
 '''
 
 #getYCbCrSizeData("subsampled_420", Y, CbDownSample, CrDownSample)
@@ -152,6 +147,7 @@ getSerializedSize(downSampledImageData, "downSampledImageData")
 reconstructedImage = channelsResize(Y ,CbSampled, CrSampled, image.shape)
 cv.imshow("Original image", image)
 cv.imshow("Reconstructed image", reconstructedImage)
-'''
 
-#cv.waitKey(0)
+
+cv.waitKey(0)
+'''
