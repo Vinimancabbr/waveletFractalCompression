@@ -84,6 +84,7 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
     
     return reconstructedImage.astype('uint8')
     
+    
 """
     Usually, the chrominance downsampling factor is fixed at 2, which essentially halves the file size. Since we have three channels (Y, Cb, Cr) 
     that we can consider to be of size "X", when we divide the rows and columns of the chrominance channels by 2, we get: X + X/4 + X/4 = 1.5X, 
@@ -93,9 +94,13 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
 """
 #cv.imshow("Original image", image)
 
+#cv.imshow("Original image", image)
+
+
 #Y, Cb, Cr = YCbCrImage(image)
 #originalData = (Y, Cb, Cr)
 #getSerializedSize(originalData, "OriginalImageInfo")
+
 
 #Discrete Wavelet Transfornm test ------------------------------
 
@@ -107,6 +112,7 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
 #getSerializedSize(DWTData, "DWTDecompressedImageInfo")
 #Y2, Cb2, Cr2 = YCbCrImage(reconstructedImage)
 
+
 #reconstructedImage = channelsResize(Y2, Cb, Cr, image.shape)
 #cv.imshow("DWT compressed image", reconstructedImage)
 
@@ -115,6 +121,11 @@ def DWTDecompression(Cfiltered, coeffSlices, wavelet='haar'):
 CbSampled = downSampleChrominance(Cb, 10)
 CrSampled = downSampleChrominance(Cr, 10)
 '''
+
+#Downsampling test ------------------------------
+#CbSampled = downSampleChrominance(Cb, 20)
+#CrSampled = downSampleChrominance(Cr, 20)
+
 
 #Subsampling test------------------------------
 '''
