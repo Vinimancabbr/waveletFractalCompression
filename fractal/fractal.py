@@ -94,28 +94,32 @@ def decode(transforms, steps=8, res=512):
     return new_image
 # --- Functions ---
 
-img = cv.imread('waveletFractalCompression\\fractal\\assets\\Old classic\\zelda.bmp')
+def main():
+    img = cv.imread('waveletFractalCompression\\fractal\\assets\\Old classic\\zelda.bmp')
 
-# Ensures the image is grayscale
-img = cv.cvtColor(img, cv.COLOR_BGR2GRAY, img)
+    # Ensures the image is grayscale
+    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY, img)
 
-print(f'Uncompressed image size: {getsizeof(img) / 1024} kb')
+    print(f'Uncompressed image size: {getsizeof(img) / 1024} kb')
 
-start = timeit.default_timer()
+    start = timeit.default_timer()
 
-transformations = encode(img, 2)
+    transformations = encode(img, 2)
 
-stop = timeit.default_timer()
-print(f'Time for enconding: {stop - start} seconds')
+    stop = timeit.default_timer()
+    print(f'Time for enconding: {stop - start} seconds')
 
-start = timeit.default_timer()
+    start = timeit.default_timer()
 
-img = decode(transformations)
+    img = decode(transformations)
 
-print(f'Compressed image size: {getsizeof(transformations) / 1024} kb')
+    print(f'Compressed image size: {getsizeof(transformations) / 1024} kb')
 
-stop = timeit.default_timer()
-print(f'Time for decoding: {stop - start} seconds')
+    stop = timeit.default_timer()
+    print(f'Time for decoding: {stop - start} seconds')
 
-cv.imshow('Image', img)
-cv.waitKey(0)
+    cv.imshow('Image', img)
+    cv.waitKey(0)
+
+if __name__ == '__main__':
+    main()
