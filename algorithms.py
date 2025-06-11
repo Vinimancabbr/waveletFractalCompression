@@ -1,7 +1,5 @@
 import cv2 as cv
 import numpy as np
-import os
-import tempfile
 import matplotlib.pyplot as plt
 import pywt
 import pickle
@@ -26,25 +24,21 @@ def YCbCrImage(originalImage):
 
 def downSampleChrominance(channel, factor):
     h, w = channel.shape
-    result = np.zeros((h // factor, w // factor), dtype=np.uint8)
-    
-    for i in range(0, h - h % factor, factor):
-        for j in range(0, w - w % factor, factor):
-            block = channel[i:i+factor, j:j+factor]
-            mean_val = np.mean(block, dtype=np.float32)
-            result[i // factor, j // factor] = np.uint8(mean_val)
-
-    return result
+    h_trim, w_trim = h - h % factor, w - w % factor 
+    trimmed = channel[:h_trim, :w_trim]
+    reshaped = trimmed.reshape(h_trim // factor, factor, w_trim // factor, factor)
+    mean_block = reshaped.mean(axis=(1, 3), dtype=np.float32)
+    return mean_block.astype(np.uint8)
 
 def subSampleChrominance(channel, factor):
     h, w = channel.shape
     result = np.zeros((h // factor, w // factor), dtype=np.uint8)
     
-    for i in range(0, h - h % factor, factor):
-        for j in range(0, w - w % factor, factor):
-            block = channel[i:i+factor, j:j+factor]
-            mainColor = block[0][0]
-            result[i // factor, j // factor] = np.uint8(mainColor)
+    for i in range(0, h // factor):
+        for j in range(0, w // factor):
+            block = channel[i*factor:(i+1)*factor, j*factor:(j+1)*factor]
+            mainColor = block[0, 0] 
+            result[i, j] = np.uint8(mainColor)
 
     return result
 
